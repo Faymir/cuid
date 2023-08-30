@@ -38,12 +38,12 @@ defmodule Cuid do
   ### Server callbacks
 
   def init(:ok) do
-    {:ok, %{:fingerprint => get_fingerprint, :count => 0}}
+    {:ok, %{:fingerprint => get_fingerprint(), :count => 0}}
   end
 
   def handle_call(:generate, _, %{:fingerprint => fingerprint, :count => count} = state) do
     cuid = Enum.join([
-      "c", timestamp, counter(count), fingerprint, random_block, random_block
+      "c", timestamp(), counter(count), fingerprint, random_block(), random_block()
     ]) |> String.downcase
 
     {:reply, cuid, %{state | :count => count + 1}}
@@ -62,7 +62,7 @@ defmodule Cuid do
   defp timestamp do
     {mega, uni, micro} = :os.timestamp
     rem((mega * 1_000_000 + uni) * 1_000_000 + micro, @discrete_values * @discrete_values)
-    |> Integer.to_string @base
+    |> Integer.to_string(@base)
   end
 
   # Returns a random 4-digit base-36 string
@@ -70,7 +70,7 @@ defmodule Cuid do
   defp random_block do
     :random.uniform(@discrete_values - 1)
     |> Integer.to_string(@base)
-    |> String.rjust(@block_size, ?0)
+    |> String.pad_leading(@block_size, ?0)
   end
 
   @operator @base * @base
@@ -79,9 +79,9 @@ defmodule Cuid do
   # It consists of the current OS process ID and the hostname
   @spec get_fingerprint() :: String.t
   defp get_fingerprint do
-    pid = rem(String.to_integer(System.get_pid), @operator) * @operator
+    pid = rem(String.to_integer(System.pid), @operator) * @operator
 
-    hostname = to_char_list :net_adm.localhost
+    hostname = to_charlist :net_adm.localhost
     hostid = rem(Enum.sum(hostname) + Enum.count(hostname) + @base, @operator)
 
     pid + hostid
