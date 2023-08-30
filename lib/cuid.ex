@@ -54,7 +54,7 @@ defmodule Cuid do
   defp counter(num) do
     num
     |> Integer.to_string(@base)
-    |> String.pad_leading(@block_size, ?0)
+    |> String.pad_leading(@block_size, "0")
   end
 
   # Returns the time as a 4-digit base-36 string
@@ -70,7 +70,7 @@ defmodule Cuid do
   defp random_block do
     :rand.uniform(@discrete_values - 1)
     |> Integer.to_string(@base)
-    |> String.pad_leading(@block_size, ?0)
+    |> String.pad_leading(@block_size, "0")
   end
 
   @operator @base * @base
